@@ -132,9 +132,7 @@ if __name__ == "__main__":
   parser.add_argument("-d", "--detectors",
                     nargs="*",
                     type=str,
-                    default=["null", "random",
-                             "bayesChangePt", "windowedGaussian", "expose",
-                             "relativeEntropy", "earthgeckoSkyline"],
+                    default=["bayesChangePt"],
                     help="Comma separated list of detector(s) to use, e.g. "
                          "null, expose")
 

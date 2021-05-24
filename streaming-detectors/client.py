@@ -3,7 +3,7 @@
 import random
 import json
 from paho.mqtt import client as mqtt_client
-from detector import WindowedGaussianDetector
+from detector_base import runner
 
 broker = 'broker.emqx.io'
 port = 1883
@@ -29,16 +29,15 @@ def connect_mqtt() -> mqtt_client:
 
 
 def subscribe(client: mqtt_client):
-    detector_obj = WindowedGaussianDetector()
     # detectors objects
     def on_message(client, userdata, msg):
         msg = json.loads(msg.payload.decode())
         timestamp = msg["timestamp"]
         value = msg["value"]
         msg = {"timestamp":timestamp, "value":float(value)}
-        anomalyScore = detector_obj.handleRecord(msg)
+        runner(msg)
         
-        print (f"Anomaly Score : {anomalyScore}")
+        #print (f"Anomaly Score : {anomalyScore}")
         # print (f"timestamp {timestamp}")
         # print (f"value {value}")
 
