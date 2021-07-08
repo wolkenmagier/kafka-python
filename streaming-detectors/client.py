@@ -3,16 +3,17 @@
 import random
 import json
 from paho.mqtt import client as mqtt_client
-from detector_base import runner
+import threading
+import time
 
 broker = 'broker.emqx.io'
 port = 1883
-topic = "python/mthesis"
+topic = "python/mmthesis"
 # generate client ID with pub prefix randomly
 client_id = f'python-mqtt-{random.randint(0, 100)}'
 username = 'emqx'
 password = 'public'
-
+buffer = []
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
@@ -27,15 +28,24 @@ def connect_mqtt() -> mqtt_client:
     client.connect(broker, port)
     return client
 
+def consumer():
+    while (True):
+        if (len(buffer)>0):
+            print(buffer[-1])
+            buffer.pop()
+        time.sleep(3)
 
 def subscribe(client: mqtt_client):
     # detectors objects
     def on_message(client, userdata, msg):
+        global buffer
         msg = json.loads(msg.payload.decode())
         timestamp = msg["timestamp"]
         value = msg["value"]
         msg = {"timestamp":timestamp, "value":float(value)}
-        runner(msg)
+        buffer.append(msg)
+        # runner(msg)
+
         
         #print (f"Anomaly Score : {anomalyScore}")
         # print (f"timestamp {timestamp}")
@@ -54,4 +64,10 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    buffer_processor = threading.Thread(target=run)
+    buffer_processor.start()
+
+    buffer_consumer = threading.Thread(target=consumer)
+    buffer_consumer.start()
+    buffer_consumer.join()
+    
